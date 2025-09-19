@@ -167,7 +167,7 @@ jobs:
         with:
           app-id: ${{ secrets.InsiderActionsApplication_APP_ID }}
           private-key: ${{ secrets.InsiderActionsApplication_PRIVATE_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -206,7 +206,7 @@ jobs:
         with:
           app-id: ${{ secrets.InsiderActionsApplication_APP_ID }}
           private-key: ${{ secrets.InsiderActionsApplication_PRIVATE_KEY }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
