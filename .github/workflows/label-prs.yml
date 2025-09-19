@@ -1,11 +1,10 @@
-# This workflow labels PRs based on the files that were changed. It uses a custom script to this
-# instead of actions/labeler as few of the tags are more than just file changes.
-
 name: Label PRs
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened]
-
+    types:
+      - opened
+      - synchronize
+      - reopened
 jobs:
   pr-labeler:
     runs-on: ubuntu-22.04
@@ -13,6 +12,12 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      - name: Create GitHub App token
+        id: github-app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.InsiderActionsApplication_APP_ID }}
+          private-key: ${{ secrets.InsiderActionsApplication_PRIVATE_KEY }}
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -21,18 +26,15 @@ jobs:
         id: compute-labels
         uses: actions/github-script@v7
         with:
-          # Required for the script to access team membership information.
-          # Scope: members:read and contentes:read permission on the organization.
           github-token: ${{ secrets.GH_PAT_MEMBER_AND_PULL_REQUEST_READONLY }}
           script: |
             const script = require('./scripts/github-action/compute-labels.js')
             await script({github, context, core})
-      # Separating apply labels to separate step to avoid using PAT token auth.
       - name: Apply Labels
         uses: actions/github-script@v7
         env:
-          labelsToAdd: '${{ steps.compute-labels.outputs.add }}'
-          labelsToRemove: '${{ steps.compute-labels.outputs.remove }}'
+          labelsToAdd: ${{ steps.compute-labels.outputs.add }}
+          labelsToRemove: ${{ steps.compute-labels.outputs.remove }}
         with:
           script: |
             const { labelsToAdd, labelsToRemove, DRY_RUN } = process.env
@@ -60,12 +62,11 @@ jobs:
               });
               await Promise.all(requests);
             }
-
       - name: Comment for mapping-kit changes
         uses: actions/github-script@v7
         env:
-          labelsToAdd: '${{ steps.compute-labels.outputs.add }}'
-          labelsToRemove: '${{ steps.compute-labels.outputs.remove }}'
+          labelsToAdd: ${{ steps.compute-labels.outputs.add }}
+          labelsToRemove: ${{ steps.compute-labels.outputs.remove }}
         with:
           script: |
             const { labelsToAdd, labelsToRemove, DRY_RUN } = process.env
